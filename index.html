@@ -5,97 +5,91 @@
   <title>PDF Flipbook</title>
   <style>
     body {
-      background: #f0f0f0;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 20px;
+      background: #eee;
+      font-family: Arial, sans-serif;
+      text-align: center;
     }
+
     #flipbook {
       width: 800px;
       height: 600px;
       margin: 20px auto;
     }
+
     .page {
       width: 400px;
       height: 600px;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-    .controls {
-      margin-top: 10px;
-    }
-    .controls button {
-      padding: 8px 16px;
-      margin: 0 5px;
+
+    button {
+      margin: 10px;
+      padding: 10px 20px;
       font-size: 16px;
     }
   </style>
 </head>
 <body>
+  <h1>PDF Flipbook</h1>
+  <div id="flipbook"></div>
 
-<h2>PDF Flipbook</h2>
-<div id="flipbook"></div>
-
-<div class="controls">
   <button onclick="$('#flipbook').turn('previous')">Previous</button>
   <button onclick="$('#flipbook').turn('next')">Next</button>
-</div>
 
-<!-- Load jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Load Turn.js -->
-<script src="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.js"></script>
+  <!-- Turn.js (working version) -->
+  <script src="https://www.turnjs.com/lib/turn.min.js"></script>
 
-<!-- Load PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 
-<script>
-  const pdfUrl = "A-Feminist-Manifesto-Ita.pdf"; // Change to actual path if needed
-  const flipbook = $('#flipbook');
+  <script>
+    const pdfUrl = "A-Feminist-Manifesto-Ita.pdf"; // Make sure this file exists in your root
 
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+    const flipbook = $('#flipbook');
+    const loadingTask = pdfjsLib.getDocument(pdfUrl);
 
-  const loadingTask = pdfjsLib.getDocument(pdfUrl);
+    loadingTask.promise.then(function(pdf) {
+      const numPages = pdf.numPages;
 
-  loadingTask.promise.then(function(pdf) {
-    const numPages = pdf.numPages;
-    let loadedPages = 0;
+      let loadPage = function(pageNumber) {
+        pdf.getPage(pageNumber).then(function(page) {
+          const viewport = page.getViewport({scale: 1.5});
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
 
-    for (let i = 1; i <= numPages; i++) {
-      pdf.getPage(i).then(function(page) {
-        const viewport = page.getViewport({scale: 1.5});
-        const canvas = document.createElement("canvas");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
 
-        const context = canvas.getContext('2d');
+          page.render({
+            canvasContext: context,
+            viewport: viewport
+          }).promise.then(function() {
+            const pageDiv = document.createElement("div");
+            pageDiv.classList.add("page");
+            pageDiv.appendChild(canvas);
+            flipbook.append(pageDiv);
 
-        page.render({canvasContext: context, viewport: viewport}).promise.then(function() {
-          const pageDiv = document.createElement("div");
-          pageDiv.className = "page";
-          pageDiv.appendChild(canvas);
-          flipbook.append(pageDiv);
-
-          loadedPages++;
-          if (loadedPages === numPages) {
-            flipbook.turn({
-              width: 800,
-              height: 600,
-              autoCenter: true,
-              elevation: 50,
-              gradients: true,
-              display: 'double'
-            });
-          }
+            if (pageNumber < numPages) {
+              loadPage(pageNumber + 1);
+            } else {
+              initFlipbook();
+            }
+          });
         });
-      });
-    }
-  });
-</script>
+      };
 
+      function initFlipbook() {
+        $('#flipbook').turn({
+          width: 800,
+          height: 600,
+          autoCenter: true
+        });
+      }
+
+      loadPage(1);
+    });
+  </script>
 </body>
 </html>
