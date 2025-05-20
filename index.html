@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PDF Flipbook</title>
+  <style>
+    #flipbook {
+      width: 800px;
+      height: 600px;
+      margin: auto;
+    }
+    .page {
+      width: 400px;
+      height: 600px;
+    }
+  </style>
+</head>
+<body>
+  <div id="flipbook"></div>
+
+  <!-- Load jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Load Turn.js -->
+  <script src="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.js"></script>
+
+  <!-- Load PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+  <script>
+    const pdfUrl = "https://drive.google.com/uc?export=download&id=1-FNruYVWkJnC8J8l_ySG-JQadCUzbu2h";
+
+    const flipbook = $('#flipbook');
+    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+    loadingTask.promise.then(function(pdf) {
+      const numPages = pdf.numPages;
+
+      let loadPage = function(pageNumber) {
+        pdf.getPage(pageNumber).then(function(page) {
+          const viewport = page.getViewport({scale: 1.5});
+          const canvas = document.createElement("canvas");
+          canvas.classList.add("page");
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          page.render({canvasContext: context, viewport: viewport}).promise.then(function() {
+            flipbook.append(canvas);
+            if (pageNumber < numPages) loadPage(pageNumber + 1);
+            else initFlipbook();
+          });
+        });
+      };
+
+      function initFlipbook() {
+        $('#flipbook').turn({
+          width: 800,
+          height: 600,
+          autoCenter: true
+        });
+      }
+
+      loadPage(1);
+    });
+  </script>
+</body>
+</html>
