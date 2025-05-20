@@ -1,97 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>PDF Flipbook</title>
-  <style>
-    body {
-      background: #eee;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-
-    #flipbook {
-      width: 800px;
-      height: 600px;
-      margin: auto;
-    }
-
-    .page {
-      width: 400px;
-      height: 600px;
-      background: white;
-    }
-
-    canvas {
-      width: 100%;
-      height: 100%;
-    }
-
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-  </style>
+<meta charset="utf-8">
+<title>Source code</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.3dflipbook.net/js/jquery.min.js"></script>
 </head>
 <body>
+<div class="source-link">
+  <a class="show-source" data="simple-tag-pdf">Show source code</a>
+</div>
 
-<h1>PDF Flipbook</h1>
-<div id="flipbook"></div>
-<button onclick="$('#flipbook').turn('previous')">Previous</button>
-<button onclick="$('#flipbook').turn('next')">Next</button>
+<div class="sample-container-box">
+  <div class="sample-container flip-book-container" src="books/gallery/Food/Catalago-Natal-22.pdf">
 
-<!-- Libraries -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/blasten/turn.js@master/lib/turn.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  </div>
+</div>
 
-<script>
-  const pdfUrl = "A-Feminist-Manifesto-Ita.pdf";
 
-  const flipbook = $('#flipbook');
-  const loadingTask = pdfjsLib.getDocument(pdfUrl);
 
-  loadingTask.promise.then(function(pdf) {
-    const numPages = pdf.numPages;
-    let loadedPages = 0;
+<script src="js/three.min.js"></script>
+<script src="js/pdf.min.js"></script>
 
-    for (let i = 1; i <= numPages; i++) {
-      pdf.getPage(i).then(function(page) {
-        const viewport = page.getViewport({ scale: 1 });
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        page.render({
-          canvasContext: context,
-          viewport: viewport
-        }).promise.then(function() {
-          const pageDiv = document.createElement('div');
-          pageDiv.className = 'page';
-          pageDiv.appendChild(canvas);
-          flipbook.append(pageDiv);
-
-          loadedPages++;
-          if (loadedPages === numPages) {
-            setTimeout(() => {
-              $('#flipbook').turn({
-                width: 800,
-                height: 600,
-                autoCenter: true,
-                display: 'double'
-              });
-            }, 100);
-          }
-        });
-      });
-    }
-  });
+<script type="text/javascript">
+  window.PDFJS_LOCALE = {
+    pdfJsWorker: 'js/pdf.worker.js',
+    pdfJsCMapUrl: 'cmaps'
+  };
 </script>
-
+<script src="js/3dflipbook.min.js"></script>
 </body>
 </html>
